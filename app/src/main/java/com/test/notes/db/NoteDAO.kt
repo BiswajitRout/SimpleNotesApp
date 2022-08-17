@@ -2,10 +2,10 @@ package com.test.notes.db
 
 import androidx.room.*
 import com.test.notes.model.Note
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NoteDAO {
-
     @Insert
     suspend fun addNote(note: Note)
 
@@ -15,6 +15,6 @@ interface NoteDAO {
     @Delete
     suspend fun deleteNote(note: Note)
 
-    @Query("SELECT * FROM Note ORDER BY updatedAt ASC")
-    suspend fun getAllNotes(): List<Note>
+    @Query("SELECT * FROM Note ORDER BY updatedAt DESC")
+    fun getAllNotes(): Flow<List<Note>>
 }

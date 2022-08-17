@@ -7,17 +7,21 @@
 
     <fragment
         android:id="@+id/NoteListFragment"
-        android:name="com.test.notes.NoteListFragment"
+        android:name="com.test.notes.ui.NoteListFragment"
         android:label="@string/note_list_fragment_label"
         tools:layout="@layout/fragment_notes_list">
 
         <action
-            android:id="@+id/action_NoteListFragment_to_CreateNoteFragment"
-            app:destination="@id/CreateNoteFragment" />
+            android:id="@+id/action_NoteListFragment_to_NoteFragment"
+            app:destination="@id/NoteFragment" />
     </fragment>
     <fragment
-        android:id="@+id/CreateNoteFragment"
-        android:name="com.test.notes.CreateNoteFragment"
-        android:label="@string/create_note_fragment_label"
-        tools:layout="@layout/fragment_create_note"/>
+        android:id="@+id/NoteFragment"
+        android:name="com.test.notes.ui.NoteFragment"
+        android:label="@string/note_fragment_label"
+        tools:layout="@layout/fragment_note">
+        <argument
+            android:name="note"
+            app:argType="string" />
+    </fragment>
 </navigation>
