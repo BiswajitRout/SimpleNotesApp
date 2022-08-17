@@ -15,6 +15,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -26,12 +27,16 @@ import com.test.notes.model.Note
 import com.test.notes.ui.viewmodel.NoteViewModel
 import com.test.notes.utils.OperationStatus
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
+@Suppress("OVERRIDE_DEPRECATION")
 @AndroidEntryPoint
 class NoteFragment : Fragment() {
 
@@ -40,7 +45,7 @@ class NoteFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel by viewModels<NoteViewModel>()
-    private lateinit var imageUri: String
+    private var imageUri: String = ""
 
     private var imageCapture: ImageCapture? = null
     private lateinit var outputDirectory: File
@@ -92,8 +97,14 @@ class NoteFragment : Fragment() {
         binding.bDelete.setOnClickListener {
             viewModel.deleteNote(note!!)
         }
-        binding.ivImage.setOnClickListener {
-            takePhoto()
+        binding.fabImage.setOnClickListener {
+            if (!binding.ivPreview.isVisible) {
+                takePhoto()
+            } else {
+                Glide.with(requireContext()).load(R.drawable.ic_camera).into(binding.fabImage)
+                binding.pvImage.visibility = View.VISIBLE
+                binding.ivPreview.visibility = View.GONE
+            }
         }
         binding.bSubmit.setOnClickListener {
             val title = binding.etTitle.text.toString()
@@ -109,7 +120,15 @@ class NoteFragment : Fragment() {
                     }
                     viewModel.updateNote(note!!)
                 } else {
-                    val newNote = Note(0, title, imageUri, description, false, Date(), Date())
+                    val newNote = Note(
+                        _id = 0,
+                        title = title,
+                        description = description,
+                        image = imageUri,
+                        isEdited = false,
+                        createdAt = Date(),
+                        updatedAt = Date()
+                    )
                     viewModel.createNote(newNote)
                 }
             } else {
@@ -127,13 +146,18 @@ class NoteFragment : Fragment() {
         if (jsonNote.isNullOrEmpty()) {
             binding.tvHeader.text = resources.getString(R.string.title_add_note)
             binding.bSubmit.text = resources.getString(R.string.title_add_note)
+            Glide.with(requireContext()).load(R.drawable.ic_camera).into(binding.fabImage)
+            binding.pvImage.visibility = View.VISIBLE
         } else {
             binding.bDelete.visibility = View.VISIBLE
             binding.tvHeader.text = resources.getString(R.string.title_edit_note)
             note = Gson().fromJson(jsonNote, Note::class.java)
             imageUri = note?.image ?: ""
-            if (imageUri.isNotEmpty())
-                Glide.with(requireContext()).load(imageUri).into(binding.ivImage)
+            if (imageUri.isNotEmpty()) {
+                binding.ivPreview.visibility = View.VISIBLE
+                Glide.with(requireContext()).load(imageUri).into(binding.ivPreview)
+                Glide.with(requireContext()).load(R.drawable.ic_add_photo).into(binding.fabImage)
+            }
             binding.etTitle.setText(note?.title)
             binding.etDescription.setText(note?.description)
             binding.bSubmit.text = resources.getString(R.string.title_update_note)
@@ -190,9 +214,7 @@ class NoteFragment : Fragment() {
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(
-            Manifest.permission.CAMERA,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE
+            Manifest.permission.CAMERA
         )
     }
 
@@ -223,14 +245,22 @@ class NoteFragment : Fragment() {
 
         imageCapture.takePicture(
             outputOptions,
-            ContextCompat.getMainExecutor(requireContext()),
+            cameraExecutor,
+            //ContextCompat.getMainExecutor(requireContext()),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onError(exc: ImageCaptureException) {
                     Log.e("Photo capture failed:", "${exc.message}")
                 }
 
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    //Glide.with(requireContext()).load(photoFile).into(binding.pvImage)
+                    imageUri = photoFile.absolutePath
+                    CoroutineScope(Dispatchers.Main).launch {
+                        Glide.with(requireContext()).load(photoFile).into(binding.ivPreview)
+                        Glide.with(requireContext()).load(R.drawable.ic_add_photo)
+                            .into(binding.fabImage)
+                        binding.pvImage.visibility = View.GONE
+                        binding.ivPreview.visibility = View.VISIBLE
+                    }
                 }
             })
     }

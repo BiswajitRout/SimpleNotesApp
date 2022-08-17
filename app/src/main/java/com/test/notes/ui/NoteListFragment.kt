@@ -32,7 +32,7 @@ class NoteListFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentNotesListBinding.inflate(inflater, container, false)
-        adapter = NoteAdapter(:: onNoteClicked)
+        adapter = NoteAdapter(requireContext(), :: onNoteClicked)
         return binding.root
     }
 
