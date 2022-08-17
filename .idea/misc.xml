@@ -4,6 +4,7 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="app/src/main/res/drawable/bg_note.xml" value="0.1235" />
+        <entry key="app/src/main/res/drawable/ic_add_photo.xml" value="0.141" />
         <entry key="app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="app/src/main/res/layout/content_main.xml" value="0.1279011099899092" />
         <entry key="app/src/main/res/layout/fragment_create_note.xml" value="0.24427083333333333" />

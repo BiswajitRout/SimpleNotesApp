@@ -11,8 +11,9 @@
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="title_create">Create</string>
     <string name="note_title">Add Note</string>
+    <string name="label_add_note">Add Note*</string>
     <string name="hint_note_title">Write your title</string>
-    <string name="label_description">Description</string>
+    <string name="label_description">Description*</string>
     <string name="hint_description">Write your description</string>
     <string name="title_submit">Submit</string>
     <string name="title_add_note">Add Note</string>
